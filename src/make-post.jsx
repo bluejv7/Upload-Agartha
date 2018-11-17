@@ -24,7 +24,7 @@ export default class MakePost extends React.Component<{}> {
         let location = this.location || '(location here)';
         let outfit = this.outfit || '(outfit here)';
         let withTag = this.with || '(tag whoever you are interacting with)';
-        let header = `**Mood:** ${mood} ||** Location:** ${location} || **Outfit:** ${outfit} || **With:** ${withTag}`;
+        let header = `**Mood:** ${mood} || ** Location:** ${location} || **Outfit:** ${outfit} || **With:** ${withTag}`;
         return header;
     }
 
