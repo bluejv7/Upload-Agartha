@@ -1,0 +1,23 @@
+{
+  "name": "upload-agartha",
+  "version": "1.0.0",
+  "description": "Repo for RP group",
+  "main": "index.js",
+  "scripts": {
+    "sass": "sass --watch ./scss:./css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluejv7/upload-agartha.git"
+  },
+  "author": "Jv",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bluejv7/upload-agartha/issues"
+  },
+  "homepage": "https://github.com/bluejv7/upload-agartha#readme",
+  "dependencies": {
+    "sass": "^1.15.1"
+  }
+}
