@@ -1,0 +1,49 @@
+body {
+  font-family: "open-sans";
+  padding: 1rem;
+}
+
+h1 {
+  text-align: center;
+}
+
+.cmp-make-post {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cmp-make-post .copy {
+  border: 1px solid black;
+  margin-top: 1rem;
+  padding: 1rem;
+  width: 750px;
+}
+.cmp-make-post .header input:not(:first-child) {
+  margin-left: 1rem;
+}
+.cmp-make-post .header .content {
+  margin-top: 1rem;
+}
+.cmp-make-post .header .content textarea {
+  width: 100%;
+  height: 10rem;
+}
+.cmp-make-post .preview {
+  border: 1px solid black;
+  margin-top: 3rem;
+  padding: 1rem;
+  width: 750px;
+}
+.cmp-make-post .preview .code {
+  padding: 0.1rem 0;
+  background-color: #F8F9F9;
+}
+.cmp-make-post .preview .code-block {
+  border: 2px solid #EBECEE;
+  border-radius: 5px;
+  padding: 0.35rem;
+  width: 95%;
+  background-color: #F8F9F9;
+}
+
+/*# sourceMappingURL=make-post.css.map */
