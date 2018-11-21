@@ -1,4 +1,5 @@
 {
+    "plugins": ["jsx-control-statements"],
     "presets": [
         "@babel/preset-flow",
         "mobx",

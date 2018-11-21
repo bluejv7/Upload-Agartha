@@ -9,10 +9,23 @@ import sanitizeHtml from 'sanitize-html-react';
 @mobxreact.observer
 export default class MakePost extends React.Component<{}> {
     @mobx.observable content = '';
+    cookie: ?Cookie;
+    @mobx.observable currentPostName = 'post: ';
     @mobx.observable location = '';
     @mobx.observable mood = '';
     @mobx.observable outfit = '';
+    @mobx.observable postIndex = 0;
+    posts = mobx.observable([]);
     @mobx.observable with = '';
+
+    componentDidMount() {
+        this.cookie = new Cookie(document.cookie);
+        this.posts.replace(this.cookie.posts);
+        if (this.posts.length == 0)
+            this.onPostNew();
+
+        this.loadPost();
+    }
 
     getContent() {
         let content = this.content || '(content here)';
@@ -28,6 +41,25 @@ export default class MakePost extends React.Component<{}> {
         return header;
     }
 
+    loadPost() {
+        let post = this.posts[this.postIndex];
+        if (!post)
+            return;
+
+        let content = post.content;
+        this.content = content.content;
+        this.currentPostName = post.name;
+        this.location = content.location;
+        this.mood = content.mood;
+        this.outfit = content.outfit;
+        this.with = content.with;
+    }
+
+    onContentChange(event: SyntheticEvent<any>) {
+        this.content = event.currentTarget.value;
+        this.save();
+    }
+
     onCopy() {
         let copy = this.getHeader() + '\n\n' + this.getContent();
         let textarea = document.createElement('textarea');
@@ -37,6 +69,81 @@ export default class MakePost extends React.Component<{}> {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
+    }
+
+    onLocationChange(event: SyntheticEvent<any>) {
+        this.location = event.currentTarget.value;
+        this.save();
+    }
+
+    onMoodChange(event: SyntheticEvent<any>) {
+        this.mood = event.currentTarget.value;
+        this.save();
+    }
+
+    onOutfitChange(event: SyntheticEvent<any>) {
+        this.outfit = event.currentTarget.value;
+        this.save();
+    }
+
+    onPostChange(event: SyntheticEvent<any>) {
+        this.postIndex = event.currentTarget.value;
+        this.loadPost();
+    }
+
+    onPostDelete() {
+        let post = this.posts[this.postIndex];
+        if (this.posts.length == 1) {
+            this.onPostNew();
+        }
+        else {
+            this.postIndex = 0;
+        }
+
+        this.cookie.deletePost(post);
+        let postIndex = this.posts.findIndex(p => p.name == post.name);
+        if (postIndex != -1)
+            this.posts.splice(postIndex, 1);
+        this.loadPost();
+    }
+
+    onPostNameChange(event: SyntheticEvent<any>) {
+        let name = event.currentTarget.value;
+        if (name.indexOf('post: ') != 0)
+            return;
+        this.currentPostName = name;
+
+        if (this.posts.findIndex(post => post.name == name) != -1)
+            return;
+
+        let post = this.posts[this.postIndex];
+        this.cookie.deletePost(post);
+        post.name = name;
+        this.save();
+    }
+
+    onPostNew() {
+        let name = 'post: ';
+        let number = this.posts.length;
+        while (this.posts.findIndex(post => post.name == name + number) != -1)
+            number++;
+
+        let content = {
+            content: '',
+            location: '',
+            mood: '',
+            outfit: '',
+            with: ''
+        };
+        this.posts.unshift({name: name + number, content: content});
+        this.postIndex = 0;
+        this.loadPost();
+        this.save();
+    }
+
+    onWithChange(event: SyntheticEvent<any>) {
+        this.with = event.currentTarget.value;
+        this.save();
     }
 
     preview() {
@@ -55,38 +162,64 @@ export default class MakePost extends React.Component<{}> {
         return preview;
     }
 
+    save() {
+        this.posts[this.postIndex].content = {
+            content: this.content,
+            location: this.location,
+            mood: this.mood,
+            outfit: this.outfit,
+            with: this.with
+        };
+        this.cookie.writeCookie(this.posts);
+    }
+
     render() {
         return (
             <div className="cmp-make-post">
+                <div className="post-selector">
+                    <select onChange={this.onPostChange} value={this.postIndex}>
+                        <For each="post" index="i" of={this.posts}>
+                            <option key={i} value={i}>{post.name}</option>
+                        </For>
+                    </select>
+
+                    <input type="text" onChange={this.onPostNameChange} value={this.currentPostName} />
+
+                    <button onClick={this.onPostNew}>New Post</button>
+
+                    <button onClick={this.onPostDelete}>Delete Post</button>
+                </div>
+
                 <div className="header">
+
                     <input
                         autoFocus={true}
-                        onChange={event => this.mood = event.currentTarget.value}
+                        onChange={this.onMoodChange}
                         placeholder="Mood"
                         type="text"
                         value={this.mood}
                     />
                     <input
-                        onChange={event => this.location = event.currentTarget.value}
+                        onChange={this.onLocationChange}
                         placeholder="Location"
                         type="text"
                         value={this.location}
                     />
                     <input
-                        onChange={event => this.outfit = event.currentTarget.value}
+                        onChange={this.onOutfitChange}
                         placeholder="Outfit"
                         type="text"
                         value={this.outfit}
                     />
                     <input
-                        onChange={event => this.with = event.currentTarget.value}
+                        onChange={this.onWithChange}
                         placeholder="With"
                         type="text"
                         value={this.with}
                     />
 
                     <div className="content">
-                        <textarea onChange={event => this.content = event.currentTarget.value} value={this.content} />
+                        <textarea onChange={this.onContentChange} value={this.content} />
                     </div>
                 </div>
 
@@ -121,3 +254,28 @@ export default class MakePost extends React.Component<{}> {
     }
 }
 
+@autobind
+class Cookie {
+    posts = mobx.observable([]);
+
+    constructor(cookie: string) {
+        let postStrs = cookie.split(/;\s*/).filter(s => s.length && s.indexOf('post') == 0);
+        postStrs.forEach(postStr => {
+            let firstEqIndex = postStr.indexOf('=');
+            let post = {
+                content: JSON.parse(decodeURIComponent(postStr.substring(firstEqIndex+1))),
+                name: decodeURIComponent(postStr.substring(0, firstEqIndex))
+            };
+            this.posts.unshift(post);
+        });
+    }
+
+    deletePost(post) {
+        document.cookie = `${encodeURIComponent(post.name)}=; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+    }
+
+    writeCookie(posts) {
+        let cookieStr = posts.map(post => `${encodeURIComponent(post.name)}=${encodeURIComponent(JSON.stringify(post.content))}`).join(';');
+        document.cookie = cookieStr;
+    }
+}

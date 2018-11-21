@@ -28,6 +28,12 @@ h1 {
   width: 100%;
   height: 10rem;
 }
+.cmp-make-post .post-selector {
+  margin-bottom: 0.8rem;
+}
+.cmp-make-post .post-selector button, .cmp-make-post .post-selector input {
+  margin-left: 1rem;
+}
 .cmp-make-post .preview {
   border: 1px solid black;
   margin-top: 3rem;
