@@ -276,6 +276,9 @@ class Cookie {
 
     writeCookie(posts) {
         let cookieStr = posts.map(post => `${encodeURIComponent(post.name)}=${encodeURIComponent(JSON.stringify(post.content))}`).join(';');
+        let date = new Date();
+        date.setFullYear(date.getFullYear() + 1);
+        cookieStr += '; expires=' + date.toUTCString();
         document.cookie = cookieStr;
     }
 }
